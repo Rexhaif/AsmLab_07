@@ -1,0 +1,103 @@
+     1                                  SECTION .bss
+     2 00000000 <res 00000050>             IObuf: RESB 80
+     3 00000050 <res 00000050>             TMPbuf: RESB 80
+     4                                     
+     5                                  SECTION .data
+     6 00000000 456E74657220612073-        wlcm: DB 'Enter a string, they should contain at least one number', 10
+     7 00000009 7472696E672C207468-
+     8 00000012 65792073686F756C64-
+     9 0000001B 20636F6E7461696E20-
+    10 00000024 6174206C6561737420-
+    11 0000002D 6F6E65206E756D6265-
+    12 00000036 720A               
+    13                                     wlcmLen: EQU $-wlcm
+    14                                  SECTION .text
+    15                                     GLOBAL _start
+    16                                  
+    17                                  PrintString:
+    18 00000000 66B804000000               mov eax, 4
+    19 00000006 66BB00000000               mov ebx, 0
+    20 0000000C CD80                       int 80h
+    21 0000000E C3                         ret
+    22                                  
+    23                                  ReadString:
+    24 0000000F 66B803000000               mov eax, 3
+    25 00000015 66BB01000000               mov ebx, 1
+    26 0000001B 6689F1                     mov ecx, esi
+    27 0000001E 66BA50000000               mov edx, 80
+    28                                  
+    29 00000024 CD80                       int 80h
+    30                                  
+    31 00000026 C3                         ret
+    32                                  
+    33                                  SetBits:
+    34 00000027 66B900000000               mov ecx, 0
+    35 0000002D 66BE[00000000]             mov esi, IObuf
+    36                                  
+    37                                     lp1:
+    38 00000033 6646                    	inc esi
+    39 00000035 678A06                  	mov al, [esi]
+    40 00000038 3C0A                    	cmp al, 10
+    41 0000003A 741B                    	   je end
+    42                                  	
+    43 0000003C 2C30                    	sub al, '0'
+    44 0000003E 3C00                    	cmp al, 0
+    45 00000040 72F1                    	   jb lp1
+    46 00000042 3C09                    	cmp al, 9
+    47 00000044 77ED                    	   ja lp1
+    48                                  	
+    49 00000046 88C1                    	mov cl, al
+    50 00000048 66BA01000000            	mov edx, 1
+    51 0000004E 66D3E2                  	shl edx, cl
+    52 00000051 66670917                	or [edi], edx
+    53                                  	
+    54 00000055 EBDC                    	jmp lp1
+    55                                  
+    56                                      end:
+    57 00000057 C3                      	ret
+    58                                  
+    59                                  Convert:
+    60 00000058 6631C9                     xor ecx, ecx
+    61 0000005B 6631DB                     xor ebx, ebx
+    62 0000005E B302                       mov bl, 2
+    63                                      
+    64                                     .divide:
+    65 00000060 6631D2                       xor edx, edx
+    66 00000063 66F7F3                       div ebx
+    67 00000066 80C230                       add dl, '0'
+    68 00000069 52                           push dx
+    69 0000006A 6641                         inc ecx
+    70 0000006C 6683F800                     cmp eax, 0
+    71 00000070 75EE                       jnz .divide
+    72                                      
+    73                                     .reverse:
+    74 00000072 58                           pop ax
+    75 00000073 AA                           stosb
+    76 00000074 E2FC                       loop .reverse
+    77 00000076 C3                         ret
+    78                                  
+    79                                  _start:
+    80 00000077 66B9[00000000]             mov ecx, wlcm
+    81 0000007D 66BA38000000               mov edx, wlcmLen
+    82 00000083 E87AFF                     call PrintString
+    83                                  
+    84 00000086 66BE[00000000]             mov esi, IObuf
+    85 0000008C E880FF                     call ReadString
+    86                                     
+    87 0000008F 66BF[00000000]             mov edi, IObuf
+    88 00000095 66BE[50000000]             mov esi, TMPbuf
+    89 0000009B E889FF                     call SetBits
+    90                                  
+    91 0000009E 66A1[5000]                 mov eax, [TMPbuf]
+    92 000000A2 66BF[00000000]             mov edi, IObuf
+    93 000000A8 E8ADFF                     call Convert
+    94                                  
+    95 000000AB 66B9[00000000]             mov ecx, IObuf
+    96 000000B1 66BA50000000               mov edx, 80
+    97 000000B7 E846FF                     call PrintString
+    98                                  
+    99                                     
+   100                                  
+   101                                  
+   102                                  
+   103                                  
